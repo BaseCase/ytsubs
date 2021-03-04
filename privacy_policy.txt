@@ -1,0 +1,1 @@
+This app does not collect or store any user information. It uses a user's Google ID to pull YouTube subcription information in the browser but does not retain that information once the user closes the tab. Besides Google Auth and the Google Data API, the app does not send or receive data from any 3rd party services.
