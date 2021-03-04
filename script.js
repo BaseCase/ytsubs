@@ -1,8 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('sign-in').addEventListener('click', signIn)
-  document.getElementById('sign-out').addEventListener('click', signOut)
-  gapi.load('client:auth2', initGoogleAPI)
+  document.getElementById('start').addEventListener('click', start)
 })
+
+function start() {
+  gapi.load('client:auth2', initGoogleAPI)
+}
 
 function initGoogleAPI() {
   gapi.client.init({
@@ -10,10 +12,9 @@ function initGoogleAPI() {
     scope: 'https://www.googleapis.com/auth/youtube.readonly',
   }).then(() => {
     const authInstance = gapi.auth2.getAuthInstance()
-    const signedIn = authInstance.isSignedIn.get()
-    // authInstance.isSignedIn.listen(requestSubscriptionData)
-    if (!signedIn) {
-      document.getElementById('status').innerText = "Currently signed out."
+    if (!authInstance.isSignedIn.get()) {
+      authInstance.isSignedIn.listen(() => requestSubscriptionData([]))
+      signIn()
     } else {
       requestSubscriptionData([])
     }
@@ -21,14 +22,13 @@ function initGoogleAPI() {
 }
 
 function signIn() {
+  document.getElementById('status').innerText = "Signing in..."
   gapi.auth2.getAuthInstance().signIn()
 }
 
-function signOut() {
-  gapi.auth2.getAuthInstance().signOut()
-}
-
 function requestSubscriptionData(subscriptions, nextPageToken) {
+  document.getElementById('status').innerText = "Fetching YT subscription data..."
+
   gapi.client.request({
     method: 'GET',
     path: '/youtube/v3/subscriptions',
@@ -42,8 +42,7 @@ function requestSubscriptionData(subscriptions, nextPageToken) {
 }
 
 function onSubscriptionData(response, subscriptions) {
-  console.log("got a page!")
-  let subs = subscriptions.concat(response.items)
+  const subs = subscriptions.concat(response.items)
   if (response.nextPageToken) {
     requestSubscriptionData(subs, response.nextPageToken)
   } else {
@@ -52,12 +51,14 @@ function onSubscriptionData(response, subscriptions) {
 }
 
 function generateRSSFeeds(subscriptions) {
-  let baseXML = "https://www.youtube.com/feeds/videos.xml?channel_id="
-  let baseHTML = "https://www.youtube.com/channel/"
+  document.getElementById('status').innerText = "Data fetched, building OPML file..."
 
-  function subscriptionEntry(sub) {
-    let id = sub.snippet.resourceId.channelId
-    let title = sub.snippet.title
+  const baseXML = "https://www.youtube.com/feeds/videos.xml?channel_id="
+  const baseHTML = "https://www.youtube.com/channel/"
+
+  function singleSubscriptionXML(sub) {
+    const id = sub.snippet.resourceId.channelId
+    const title = sub.snippet.title
     return [
       '<outline',
       `text="${title}"`,
@@ -76,14 +77,20 @@ function generateRSSFeeds(subscriptions) {
   </head>
   <body>
     <outline text="YouTube Subscriptions" title="YouTube Subscriptions">
-${subscriptions.map(s => '      ' + subscriptionEntry(s)).join('\n')}
+${subscriptions.map(s => '      ' + singleSubscriptionXML(s)).join('\n')}
     </outline>
   </body>
 </opml>`
 
-  document.getElementById('opml').innerText = xml
-  let link = document.getElementById('download')
-  link.href= 'data:text/xml;charset=utf8,' + encodeURI(xml)
-  link.target = '_blank'
-  link.download = 'YouTube Subscriptions.xml'
+  const xmlEl = document.getElementById('opml')
+  xmlEl.innerText = xml
+  xmlEl.classList.remove('hidden')
+
+  const downloadLink = document.getElementById('download')
+  downloadLink.href= 'data:text/xml;charset=utf8,' + encodeURI(xml)
+  downloadLink.target = '_blank'
+  downloadLink.download = 'YouTube Subscriptions.xml'
+  downloadLink.classList.remove('hidden')
+
+  document.getElementById('status').innerText = "Done!"
 }

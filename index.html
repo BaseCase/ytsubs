@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Get a single-file OPML of all RSS feeds for your YouTube subscriptions</title>
+    <style>
+      .hidden { display: none; }
+      #everything { max-width: 50em; }
+    </style>
+  </head>
+  <body>
+    <div id="everything">
+      <h2>YouTube Subscription RSS Feeds</h2>
+      <p>Use this page to grab a single-file OPML that contains RSS feeds of all your YouTube subscriptions. This feature used to be part of the YouTube subscription manager UI, but Google removed it for unknown reasons.</p>
+
+      <p>Click the link below to kick it off; Google will ask you to authenticate, and once you do, it will generate the OPML file for easy importing into readers like Feedbin, NetNewsWire, etc.</p>
+
+      <p>Don't worry, I don't keep your data or do anything with it. This is a JS-only page hosted on GitHub Pages, so I never see anything from you. If you find a bug or want to add a feature, <a href="https://github.com/BaseCase/ytsubs">the code is right here</a>.</p>
+
+      <p><a href="#" id="start">Do it</a></p>
+
+      <div id="status"></div>
+
+      <br/>
+
+      <a href="#" id="download" class="hidden">Download OPML file</a>
+      <pre id="opml" class="hidden"></pre>
+    </div>
+
+    <script src="https://apis.google.com/js/api.js"></script>
+    <script src="./script.js"></script>
+  </body>
+</html>
