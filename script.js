@@ -13,7 +13,9 @@ function initGoogleAPI() {
   }).then(() => {
     const authInstance = gapi.auth2.getAuthInstance()
     if (!authInstance.isSignedIn.get()) {
-      authInstance.isSignedIn.listen(() => requestSubscriptionData([]))
+      authInstance.isSignedIn.listen((signedIn) => {
+        if (signedIn) requestSubscriptionData([])
+      })
       signIn()
     } else {
       requestSubscriptionData([])
